@@ -1,9 +1,21 @@
-from TTS.api import TTS
-import datetime
 import os
-import sys
+import datetime
+from TTS.api import TTS
 from utils import logger
+import torch
+from TTS.tts.configs.xtts_config import XttsConfig
+from TTS.tts.models.xtts import XttsAudioConfig, Xtts, XttsArgs
+from TTS.config.shared_configs import BaseDatasetConfig
 
+# Allowlist all necessary XTTS-related globals
+torch.serialization.add_safe_globals([
+    XttsConfig,
+    XttsAudioConfig,
+    Xtts, 
+    BaseDatasetConfig, 
+    XttsArgs
+
+])
 @logger.catch
 def generate_audio_file(content: str, title: str) -> str:
     try:
@@ -23,10 +35,10 @@ def generate_audio_file(content: str, title: str) -> str:
 
         logger.info("Initializing Text-to-Speech engine...")
 
-        print("Generating podcast audio... please wait.")
+        logger.info("Generating podcast audio... please wait.")
 
         tts = TTS(
-            model_name="tts_models/en/ljspeech/tacotron2-DDC",
+            model_name="tts_models/en/ljspeech/glow-tts",
             progress_bar=False,
             gpu=False
         )

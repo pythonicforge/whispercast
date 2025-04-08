@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 from utils import logger
+import re
 
 load_dotenv()
 
@@ -22,6 +23,11 @@ def extract_llama_core_text(response: str) -> str:
             result.append(line)
 
     return "\n".join(result).strip() if result else response.strip()
+
+def clean_placeholders(text, name="Sara", podcast_name="WhisperCast"):
+    text = text.replace("[Podcast Name]", podcast_name)
+    text = text.replace("[Name]", name)
+    return text
 
 
 @logger.catch
@@ -95,7 +101,7 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
 
         final_script = expanded_completion.choices[0].message.content
 
-        return extract_llama_core_text(final_script)
+        return clean_placeholders(extract_llama_core_text(final_script))
 
     except Exception as e:
         logger.critical(f"Groq-based podcast generation failed: {e}")
