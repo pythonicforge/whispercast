@@ -2,7 +2,6 @@ import ssl
 import requests
 import wikipedia
 import feedparser
-from datetime import datetime
 from bs4 import BeautifulSoup
 from utils import logger
 
