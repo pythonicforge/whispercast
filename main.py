@@ -1,7 +1,13 @@
+from cli import Whisper
 from utils import logger
+import sys
 
-logger.debug("This is a debug message")
-logger.info("This is an info message")
-logger.warning("This is a warning message")
-logger.error("This is an error message")
-logger.critical("This is a critical message")
+
+if __name__ == "__main__":
+    try:
+        Whisper().cmdloop()
+    except KeyboardInterrupt:
+        logger.info("Keyboard Interrupt! Shutting down Whisper...\nDone")
+        sys.exit(0)
+    except Exception as e:
+        logger.error(e)

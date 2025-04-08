@@ -15,7 +15,7 @@ LOG_FILE_PATH = os.path.join(LOGS_DIR, f"{ENV}.log")
 
 logger.add(
     sys.stderr,
-    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    format="<green>[{time:YYYY-MM-DD HH:mm:ss}]</green> | [<level>{level}</level>] | - <level>{message}</level>",
     colorize=True,
     level="DEBUG" if DEBUG else "INFO"
 )
