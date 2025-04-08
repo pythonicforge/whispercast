@@ -2,8 +2,8 @@ import ssl
 import requests
 import wikipedia
 import feedparser
-from bs4 import BeautifulSoup
 from utils import logger
+from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
 
 ssl._create_default_https_context = ssl._create_unverified_context
