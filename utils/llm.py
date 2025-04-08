@@ -5,13 +5,13 @@ from utils import logger
 
 load_dotenv()
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 @logger.catch
 def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
     """
     Generate a podcast script using Groq's LLaMA 3 model – base + expanded.
     """
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     base_prompt = f"""
             You are a podcast host giving a solo monologue episode about the topic: "{topic}".
