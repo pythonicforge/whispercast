@@ -1,6 +1,6 @@
 import cmd
 import sys
-from utils import logger, get_file_path_from_output
+from utils import logger, get_file_path_from_output, fetch_topic_data
 
 class Whisper(cmd.Cmd):
     intro = "Welcome to WhisperCast! Type 'help' to list commands."
@@ -11,6 +11,8 @@ class Whisper(cmd.Cmd):
 
     def do_topic(self, arg: str) -> None:
         logger.info(f"Generating podcast for '{arg}'")
+        logger.info(f"\n{fetch_topic_data(arg)}")
+
 
     def do_rss(self, arg: str) -> None:
         logger.info(f"Generating podcast for '{arg}'")

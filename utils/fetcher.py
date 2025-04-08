@@ -1,13 +1,17 @@
-import feedparser
-import wikipedia
 import ssl
+import requests
+import wikipedia
+import feedparser
 from datetime import datetime
+from bs4 import BeautifulSoup
+from utils import logger
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
+@logger.catch
 def get_wikipedia_summary(topic):
     try:
-        summary = wikipedia.summary(topic, sentences=10)
+        summary = wikipedia.summary(topic, sentences=50)
         page = wikipedia.page(topic)
         
         links = page.links[:3]
@@ -15,8 +19,9 @@ def get_wikipedia_summary(topic):
         
         return f"{summary}\n\nRead more: {page.url}\n\nTop Links:\n{links_text}"
     except Exception as e:
-        return f"Could not fetch Wikipedia summary: {e}"
+        logger.critical(f"Could not fetch Wikipedia summary: {e}")
 
+@logger.catch
 def fetch_news_from_google(topic: str, max_articles=5):
     query = topic.replace(" ", "+")
     url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
@@ -26,26 +31,23 @@ def fetch_news_from_google(topic: str, max_articles=5):
     for entry in feed.entries[:max_articles]:
         title = entry.title
         link = entry.link
-        summary = entry.summary if hasattr(entry, "summary") else (
-            entry.description if hasattr(entry, "description") else "No summary available"
-        )
-
         published = entry.published if hasattr(entry, "published") else "Unknown date"
-        articles.append(f"Title: {title}\nPublished: {published}\nSummary: {summary}\nLink: {link}")
-    
-    return articles
 
+        try:
+            response = requests.get(link)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.content, "html.parser")
+
+            paragraphs = soup.find_all("p")
+            content = " ".join([p.get_text() for p in paragraphs[:]]) 
+            articles.append(f"Title: {title}\nPublished: {published}\nContent: {content}\nLink: {link}")
+            return articles
+        except Exception as e:
+            logger.critical(f"Could not fetch article content: {e}")
+
+@logger.catch
 def fetch_topic_data(topic: str):
-    print(f"Fetching data for topic: {topic} (at {datetime.now()})\n")
-
     wiki = get_wikipedia_summary(topic)
-    print("Wikipedia Summary:\n", wiki, "\n")
-    
     news = fetch_news_from_google(topic)
-    print("Google News Articles:\n", "\n\n".join(news), "\n")
     
     return f"Wikipedia Summary:\n{wiki}\n\nGoogle News Articles:\n" + "\n\n".join(news)
-
-if __name__ == "__main__":
-    topic = input("Enter a topic to fetch information about: ")
-    print(fetch_topic_data(topic))
