@@ -14,7 +14,7 @@ def generate_audio_file(content: str, title: str) -> str:
         output_dir = "output"
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-            logger.info("📁 Created output directory.")
+            logger.info("Created output directory.")
 
         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         clean_title = title.lower().replace(" ", "_")
@@ -30,6 +30,7 @@ def generate_audio_file(content: str, title: str) -> str:
             progress_bar=False,
             gpu=False
         )
+     #    tts.synthesizer.tts_config.decoder_params["max_decoder_steps"] = 40000
 
         tts.tts_to_file(text=content, file_path=output_path)
 

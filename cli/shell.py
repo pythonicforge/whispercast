@@ -13,7 +13,7 @@ class Whisper(cmd.Cmd):
         logger.info(f"Finding content for '{arg}'")
         content = fetch_topic_data(arg)
         logger.success(f"Fetched content")
-        generate_podcast_script(arg, content, 5)
+        content = generate_podcast_script(arg, content, 5)
         generate_audio_file(content, arg.capitalize())
 
 

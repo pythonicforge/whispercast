@@ -5,6 +5,24 @@ from utils import logger
 
 load_dotenv()
 
+def extract_llama_core_text(response: str) -> str:
+    """
+    Extract content between lines containing only '---'.
+    If not found, fallback to the full response.
+    """
+    lines = response.strip().splitlines()
+    inside = False
+    result = []
+
+    for line in lines:
+        if line.strip().startswith("---"):
+            inside = not inside  # Toggle on/off
+            continue
+        if inside:
+            result.append(line)
+
+    return "\n".join(result).strip() if result else response.strip()
+
 
 @logger.catch
 def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
@@ -77,7 +95,7 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
 
         final_script = expanded_completion.choices[0].message.content
 
-        return final_script
+        return extract_llama_core_text(final_script)
 
     except Exception as e:
         logger.critical(f"Groq-based podcast generation failed: {e}")
