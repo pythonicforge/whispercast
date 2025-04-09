@@ -4,7 +4,6 @@ import os
 
 logger.remove()
 
-# Environment-based config
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 ENV = os.getenv("ENVIRONMENT", "development")
 

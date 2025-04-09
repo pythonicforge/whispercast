@@ -7,7 +7,6 @@ from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import XttsAudioConfig, Xtts, XttsArgs
 from TTS.config.shared_configs import BaseDatasetConfig
 
-# Allowlist all necessary XTTS-related globals
 torch.serialization.add_safe_globals([
     XttsConfig,
     XttsAudioConfig,
@@ -42,7 +41,6 @@ def generate_audio_file(content: str, title: str) -> str:
             progress_bar=False,
             gpu=False
         )
-     #    tts.synthesizer.tts_config.decoder_params["max_decoder_steps"] = 40000
 
         tts.tts_to_file(text=content, file_path=output_path)
 

@@ -1,8 +1,7 @@
 import os
-from dotenv import load_dotenv
 from groq import Groq
 from utils import logger
-import re
+from dotenv import load_dotenv
 
 load_dotenv()
 
