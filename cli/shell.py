@@ -3,7 +3,7 @@ import cmd
 import sys
 import glob
 import subprocess
-from utils import logger, get_file_path_from_output, fetch_topic_data, generate_podcast_script, generate_audio_file, generate_audiobook, extract_content
+from utils import logger, fetch_topic_data, generate_podcast_script, generate_audio_file, generate_audiobook, extract_content
 from groq import Groq
 
 
@@ -50,7 +50,6 @@ class Whisper(cmd.Cmd):
             print("Failed to extract content from the file.")
             return
 
-        # Split content into manageable chunks
         content_chunks = split_content_for_llm(content)
         print("\nYou can now ask questions about the file. Type 'exit' to quit Sensei mode.")
         while True:
@@ -58,12 +57,13 @@ class Whisper(cmd.Cmd):
             if question.lower() == "exit":
                 print("Exiting Sensei mode.")
                 break
+            elif question.lower() == "clear":
+                os.system("clear")
 
             try:
                 logger.info(f"Processing question: {question}")
                 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-                # Process each chunk and aggregate answers
                 aggregated_answer = []
                 for i, chunk in enumerate(content_chunks):
                     prompt = f"""
@@ -86,7 +86,6 @@ class Whisper(cmd.Cmd):
                     answer = response.choices[0].message.content.strip()
                     aggregated_answer.append(answer)
 
-                # Combine answers from all chunks
                 final_answer = "\n".join(aggregated_answer)
                 print(f"\nAnswer: {final_answer}")
             except Exception as e:
@@ -152,5 +151,5 @@ def split_content_for_llm(content: str, max_tokens: int = 6000) -> list:
     Split content into smaller chunks to fit within the token limit.
     """
     words = content.split()
-    chunk_size = max_tokens // 2  # Approximate words per chunk
+    chunk_size = max_tokens // 2 
     return [' '.join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
