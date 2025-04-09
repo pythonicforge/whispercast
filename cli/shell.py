@@ -1,8 +1,13 @@
+import os
 import cmd
 import sys
+import glob
+import subprocess
 from utils import logger, get_file_path_from_output, fetch_topic_data, generate_podcast_script, generate_audio_file, generate_audiobook, extract_content
 
+
 class Whisper(cmd.Cmd):
+    os.system('clear')
     intro = "Welcome to WhisperCast! Type 'help' to list commands."
     prompt = "(whisper) "
 
@@ -24,15 +29,58 @@ class Whisper(cmd.Cmd):
     def do_sensei(self, arg: str) -> None:
         logger.info(f"Entering sensei mode")
 
+    def do_clear(self, args: str) -> None:
+        os.system('clear')
+
+    def do_ls(self, args: str) -> None:
+        """
+        List all available audio files in the output directory.
+        """
+        output_dir = "output"
+        if not os.path.exists(output_dir):
+            logger.warning("Output directory does not exist.")
+            print("No audio files found.")
+            return
+
+        audio_files = glob.glob(os.path.join(output_dir, "*.wav"))
+        if not audio_files:
+            logger.info("No audio files found in the output directory.")
+            print("No audio files available.")
+            return
+
+        print("Available audio files:")
+        for idx, file in enumerate(audio_files, start=1):
+            print(f"{idx}. {os.path.basename(file)}")
+
     @logger.catch
     def do_play(self, arg: str) -> None:
+        """
+        Play an audio file by selecting its number from the ls command.
+        """
         try:
-            if(get_file_path_from_output(arg)):
-                logger.info(f"Playing: {arg}")
-            else:
-                logger.error(f"{arg} file not found in output folder!")
+            output_dir = "output"
+            audio_files = glob.glob(os.path.join(output_dir, "*.wav"))
+            if not audio_files:
+                logger.error("No audio files available to play.")
+                print("No audio files available. Use 'ls' to check.")
+                return
+
+            try:
+                file_index = int(arg) - 1
+                if file_index < 0 or file_index >= len(audio_files):
+                    logger.error("Invalid file number selected.")
+                    print("Invalid file number. Use 'ls' to list available files.")
+                    return
+
+                file_to_play = audio_files[file_index]
+                logger.info(f"Playing: {file_to_play}")
+                print(f"Playing: {os.path.basename(file_to_play)}")
+                subprocess.run(["afplay", file_to_play])  # macOS-specific command
+            except ValueError:
+                logger.error("Invalid input. Please provide a valid file number.")
+                print("Invalid input. Please provide a valid file number.")
         except Exception as e:
-            logger.critical(e)
+            logger.critical(f"Error while playing audio: {e}")
 
     def do_bye(self, arg: str) -> None:
         logger.info("Shutting down whisper..\nDone")
