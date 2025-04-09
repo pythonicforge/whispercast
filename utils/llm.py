@@ -3,6 +3,7 @@ from groq import Groq
 from utils import logger
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
 def extract_llama_core_text(response: str) -> str:
@@ -24,6 +25,9 @@ def extract_llama_core_text(response: str) -> str:
     return "\n".join(result).strip() if result else response.strip()
 
 def clean_placeholders(text, name="Sara", podcast_name="WhisperCast"):
+    """
+    Replace placeholders in the text with actual values.
+    """
     text = text.replace("[Podcast Name]", podcast_name)
     text = text.replace("[Name]", name)
     return text
@@ -31,22 +35,22 @@ def clean_placeholders(text, name="Sara", podcast_name="WhisperCast"):
 @logger.catch
 def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
     """
-    Generate a podcast script using Groq's LLaMA 3 model – base + expanded.
+    Generate a podcast script using Groq's LLaMA 3 model.
     """
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     base_prompt = f"""
-            You are a podcast host giving a solo monologue episode about the topic: "{topic}".
+        You are a podcast host giving a solo monologue episode about the topic: "{topic}".
 
-            Write a clean, casual podcast script that lasts around 5-6 minutes (~600-700 words).
-            Keep it natural and engaging — like a friendly radio host speaking alone.
+        Write a clean, casual podcast script that lasts around 5-6 minutes (~600-700 words).
+        Keep it natural and engaging — like a friendly radio host speaking alone.
 
-            Avoid any scene directions like [pause], or labels like "Host:".
-            Just pure, natural dialogue.
+        Avoid any scene directions like [pause], or labels like "Host:".
+        Just pure, natural dialogue.
 
-            Use the info below to guide your content:
-            \"\"\"{content}\"\"\"
-            """
+        Use the info below to guide your content:
+        \"\"\"{content}\"\"\"
+    """
 
     try:
         logger.info("Generating base script...")
@@ -56,18 +60,17 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
             temperature=0.8,
             max_tokens=4096,
         )
-
         base_script = base_completion.choices[0].message.content
 
         expand_prompt = f"""
-                You are an expert podcast scriptwriter. Here's a podcast monologue:
+            You are an expert podcast scriptwriter. Here's a podcast monologue:
 
-                \"\"\"{base_script}\"\"\"
+            \"\"\"{base_script}\"\"\"
 
-                Expand this script to be around 2000–4000 words. 
-                Keep the tone casual, fun, and informative — like a solo podcast host.
-                Don’t change the original style — just build on it and add more insights, examples, and natural flow.
-            """
+            Expand this script to be around 2000–4000 words. 
+            Keep the tone casual, fun, and informative — like a solo podcast host.
+            Don’t change the original style — just build on it and add more insights, examples, and natural flow.
+        """
 
         logger.info("Expanding script...")
         expanded_completion = client.chat.completions.create(
@@ -76,19 +79,18 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
             temperature=0.75,
             max_tokens=8192
         )
-
         pre_final_script = expanded_completion.choices[0].message.content
 
         final_prompt = f"""
-                You are an expert podcast scriptwriter. Here's a podcast monologue:
+            You are an expert podcast scriptwriter. Here's a podcast monologue:
 
-                \"\"\"{pre_final_script}\"\"\"
+            \"\"\"{pre_final_script}\"\"\"
 
-                Expand this script to be around 2000–4000 words. 
-                Keep the tone casual, fun, and informative — like a solo podcast host.
-                Don’t change the original style — just build on it and add more insights, examples, and natural flow.
-            """
-        
+            Expand this script to be around 2000–4000 words. 
+            Keep the tone casual, fun, and informative — like a solo podcast host.
+            Don’t change the original style — just build on it and add more insights, examples, and natural flow.
+        """
+
         logger.info("Finalising script...")
         expanded_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": final_prompt.strip()}],
@@ -96,7 +98,6 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
             temperature=0.75,
             max_tokens=8192
         )
-
         final_script = expanded_completion.choices[0].message.content
 
         return clean_placeholders(extract_llama_core_text(final_script))
@@ -115,6 +116,9 @@ def split_large_content(content: str, max_tokens: int = 6000) -> list:
 
 @logger.catch
 def generate_audiobook(content: str):
+    """
+    Generate an audiobook script using Groq's LLaMA 3 model.
+    """
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     chunks = split_large_content(content)
@@ -123,17 +127,17 @@ def generate_audiobook(content: str):
     audiobook_script = []
     for i, chunk in enumerate(chunks):
         base_prompt = f"""
-                You're an audiobook narrator with a relaxed, witty, and Gen-Z-friendly tone.
+            You're an audiobook narrator with a relaxed, witty, and Gen-Z-friendly tone.
 
-                You're explaining the following content in a natural, engaging, and storytelling way — not like a lecture, but more like you're walking your friend through the topic casually, adding personality, insights, and relatable metaphors where it fits.
+            You're explaining the following content in a natural, engaging, and storytelling way — not like a lecture, but more like you're walking your friend through the topic casually, adding personality, insights, and relatable metaphors where it fits.
 
-                The audiobook should feel like you're speaking directly to the listener — like a human, not a robot.
+            The audiobook should feel like you're speaking directly to the listener — like a human, not a robot.
 
-                Make it flow like a story or an engaging TED-style explanation. Don’t use scene directions, and avoid labeling (like "Narrator:" or "Chapter 1").
+            Make it flow like a story or an engaging TED-style explanation. Don’t use scene directions, and avoid labeling (like "Narrator:" or "Chapter 1").
 
-                Use the following content as your knowledge base — explain it, break it down, and make it hit:
-                \"\"\"{chunk}\"\"\"
-                """
+            Use the following content as your knowledge base — explain it, break it down, and make it hit:
+            \"\"\"{chunk}\"\"\"
+        """
         logger.info(f"Processing chunk {i + 1}/{len(chunks)}")
         try:
             completion = client.chat.completions.create(

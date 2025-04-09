@@ -6,22 +6,38 @@ import subprocess
 from utils import logger, fetch_topic_data, generate_podcast_script, generate_audio_file, generate_audiobook, extract_content
 from groq import Groq
 
+def split_content_for_llm(content: str, max_tokens: int = 6000) -> list:
+    """
+    Split content into smaller chunks to fit within the token limit.
+    """
+    words = content.split()
+    chunk_size = max_tokens // 2
+    return [' '.join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
 
 class Whisper(cmd.Cmd):
+    """
+    Command-line interface for WhisperCast.
+    """
     os.system('clear')
     intro = "Welcome to WhisperCast! Type 'help' to list commands."
     prompt = "\n(whisper) "
 
-    def __init__(self, completekey = "tab", stdin = None, stdout = None):
+    def __init__(self, completekey="tab", stdin=None, stdout=None):
         super().__init__(completekey, stdin, stdout)
 
     def do_podcast(self, arg: str) -> None:
+        """
+        Generate a podcast based on the given topic.
+        """
         logger.info(f"Podcast generation started")
         content = fetch_topic_data(arg)
         content = generate_podcast_script(arg, content, 5)
         generate_audio_file(content, arg.capitalize())
 
     def do_audiobook(self, arg: str) -> None:
+        """
+        Generate an audiobook from the given file.
+        """
         logger.info(f"Generating audiobook for '{arg}'")
         content = extract_content(arg)
         content = generate_audiobook(content)
@@ -93,6 +109,9 @@ class Whisper(cmd.Cmd):
                 print("An error occurred while processing your question. Please try again.")
 
     def do_clear(self, args: str) -> None:
+        """
+        Clear the terminal screen.
+        """
         os.system('clear')
 
     def do_ls(self, args: str) -> None:
@@ -143,13 +162,8 @@ class Whisper(cmd.Cmd):
             logger.critical(f"Error while playing audio: {e}")
 
     def do_bye(self, arg: str) -> None:
+        """
+        Exit the WhisperCast CLI.
+        """
         logger.info("Shutting down whisper..\nDone")
         sys.exit(0)
-
-def split_content_for_llm(content: str, max_tokens: int = 6000) -> list:
-    """
-    Split content into smaller chunks to fit within the token limit.
-    """
-    words = content.split()
-    chunk_size = max_tokens // 2 
-    return [' '.join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]

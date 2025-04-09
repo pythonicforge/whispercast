@@ -1,17 +1,20 @@
 import os
-import re
 import requests
-import mimetypes
 from bs4 import BeautifulSoup
 from docx import Document
 import fitz
 from utils import logger
 
-
 def is_url(string: str) -> bool:
+    """
+    Check if the given string is a URL.
+    """
     return string.startswith("http://") or string.startswith("https://")
 
 def extract_text_from_url(url: str) -> str:
+    """
+    Extract text content from a URL.
+    """
     logger.info(f"Detected URL. Fetching content from: {url}")
     try:
         response = requests.get(url, timeout=10)
@@ -24,8 +27,10 @@ def extract_text_from_url(url: str) -> str:
         logger.error(f"Failed to fetch content from URL: {e}")
         return ""
 
-
 def extract_text_from_pdf(file_path: str) -> str:
+    """
+    Extract text content from a PDF file.
+    """
     logger.info(f"Reading PDF file: {file_path}")
     try:
         text = ""
@@ -37,8 +42,10 @@ def extract_text_from_pdf(file_path: str) -> str:
         logger.error(f"Failed to extract text from PDF: {e}")
         return ""
 
-
 def extract_text_from_docx(file_path: str) -> str:
+    """
+    Extract text content from a DOCX file.
+    """
     logger.info(f"Reading DOCX file: {file_path}")
     try:
         doc = Document(file_path)
@@ -47,8 +54,10 @@ def extract_text_from_docx(file_path: str) -> str:
         logger.error(f"Failed to extract text from DOCX: {e}")
         return ""
 
-
 def extract_text_from_txt(file_path: str) -> str:
+    """
+    Extract text content from a TXT file.
+    """
     logger.info(f"📄 Reading TXT file: {file_path}")
     try:
         with open(file_path, "r", encoding="utf-8") as f:
@@ -56,7 +65,6 @@ def extract_text_from_txt(file_path: str) -> str:
     except Exception as e:
         logger.error(f"Failed to extract text from TXT file: {e}")
         return ""
-
 
 def trim_text(text: str, max_words: int = 6000) -> str:
     """
