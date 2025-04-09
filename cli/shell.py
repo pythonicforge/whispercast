@@ -15,7 +15,6 @@ class Whisper(cmd.Cmd):
         content = generate_podcast_script(arg, content, 5)
         generate_audio_file(content, arg.capitalize())
 
-
     def do_audiobook(self, arg: str) -> None:
         logger.info(f"Generating audiobook for '{arg}'")
 

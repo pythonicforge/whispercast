@@ -106,3 +106,19 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
         logger.critical(f"Podcast generation failed: {e}")
         return ""
 
+@logger.catch
+def generate_audiobook(content: str):
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+    base_prompt = f"""
+            You are a podcast host giving a solo monologue episode about the topic: "{topic}".
+
+            Write a clean, casual podcast script that lasts around 5-6 minutes (~600-700 words).
+            Keep it natural and engaging — like a friendly radio host speaking alone.
+
+            Avoid any scene directions like [pause], or labels like "Host:".
+            Just pure, natural dialogue.
+
+            Use the info below to guide your content:
+            \"\"\"{content}\"\"\"
+            """
