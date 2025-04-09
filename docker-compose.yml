@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  whispercast:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whispercast
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - DEBUG=${DEBUG}
+      - ENVIRONMENT=${ENVIRONMENT}
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    stdin_open: true
+    tty: true
