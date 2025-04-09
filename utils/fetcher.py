@@ -125,4 +125,6 @@ def fetch_topic_data(topic: str):
 
     news_data = "\n\n".join(news)
 
+    logger.success(f"Fetched content")
+
     return f"Wikipedia Summary:\n{wiki}\n\nGoogle News Articles:\n{news_data}\n\nDuckDuckGo Insights:\n{ddg}\nReddit:\n{reddit}\nHackerNews:\n{hacker_news}"

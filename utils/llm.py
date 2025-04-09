@@ -16,7 +16,7 @@ def extract_llama_core_text(response: str) -> str:
 
     for line in lines:
         if line.strip().startswith("---"):
-            inside = not inside  # Toggle on/off
+            inside = not inside
             continue
         if inside:
             result.append(line)
@@ -50,7 +50,7 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
             """
 
     try:
-        logger.info("Generating base script with Groq...")
+        logger.info("Generating base script...")
         base_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": base_prompt.strip()}],
             model="llama3-70b-8192",
@@ -70,7 +70,7 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
                 Don’t change the original style — just build on it and add more insights, examples, and natural flow.
             """
 
-        logger.info("Expanding script with Groq...")
+        logger.info("Expanding script...")
         expanded_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": expand_prompt.strip()}],
             model="llama3-70b-8192",
@@ -90,7 +90,7 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
                 Don’t change the original style — just build on it and add more insights, examples, and natural flow.
             """
         
-        logger.info("Finalising script with Groq...")
+        logger.info("Finalising script...")
         expanded_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": final_prompt.strip()}],
             model="llama3-70b-8192",
@@ -103,5 +103,6 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
         return clean_placeholders(extract_llama_core_text(final_script))
 
     except Exception as e:
-        logger.critical(f"Groq-based podcast generation failed: {e}")
+        logger.critical(f"Podcast generation failed: {e}")
         return ""
+

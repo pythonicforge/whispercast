@@ -9,16 +9,18 @@ class Whisper(cmd.Cmd):
     def __init__(self, completekey = "tab", stdin = None, stdout = None):
         super().__init__(completekey, stdin, stdout)
 
-    def do_topic(self, arg: str) -> None:
-        logger.info(f"Finding content for '{arg}'")
+    def do_podcast(self, arg: str) -> None:
+        logger.info(f"Podcast generation started")
         content = fetch_topic_data(arg)
-        logger.success(f"Fetched content")
         content = generate_podcast_script(arg, content, 5)
         generate_audio_file(content, arg.capitalize())
 
 
-    def do_rss(self, arg: str) -> None:
-        logger.info(f"Generating podcast for '{arg}'")
+    def do_audiobook(self, arg: str) -> None:
+        logger.info(f"Generating audiobook for '{arg}'")
+
+    def do_sensei(self, arg: str) -> None:
+        logger.info(f"Entering sensei mode")
 
     @logger.catch
     def do_play(self, arg: str) -> None:
