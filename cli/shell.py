@@ -1,6 +1,6 @@
 import cmd
 import sys
-from utils import logger, get_file_path_from_output, fetch_topic_data, generate_podcast_script, generate_audio_file
+from utils import logger, get_file_path_from_output, fetch_topic_data, generate_podcast_script, generate_audio_file, generate_audiobook, extract_content
 
 class Whisper(cmd.Cmd):
     intro = "Welcome to WhisperCast! Type 'help' to list commands."
@@ -17,6 +17,10 @@ class Whisper(cmd.Cmd):
 
     def do_audiobook(self, arg: str) -> None:
         logger.info(f"Generating audiobook for '{arg}'")
+        content = extract_content(arg)
+        content = generate_audiobook(content)
+        generate_audio_file(content, "User_Audiobook")
+
 
     def do_sensei(self, arg: str) -> None:
         logger.info(f"Entering sensei mode")

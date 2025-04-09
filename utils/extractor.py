@@ -3,7 +3,6 @@ import re
 import requests
 import mimetypes
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
 from docx import Document
 import fitz
 from utils import logger
@@ -11,7 +10,6 @@ from utils import logger
 
 def is_url(string: str) -> bool:
     return string.startswith("http://") or string.startswith("https://")
-
 
 def extract_text_from_url(url: str) -> str:
     logger.info(f"Detected URL. Fetching content from: {url}")
@@ -60,26 +58,36 @@ def extract_text_from_txt(file_path: str) -> str:
         return ""
 
 
-def extract_content(source: str) -> str:
+def trim_text(text: str, max_words: int = 6000) -> str:
+    """
+    Trim the text to a maximum number of words.
+    """
+    words = text.split()
+    return ' '.join(words[:max_words])
+
+def extract_content(source: str, max_words: int = 6000) -> str:
     """
     Auto-detect and extract clean text from a URL, file, or plain text.
+    Trim the extracted content to the specified maximum number of words.
     """
     source = source.strip()
 
     if is_url(source):
-        return extract_text_from_url(source)
-
-    if os.path.isfile(source):
+        content = extract_text_from_url(source)
+    elif os.path.isfile(source):
         ext = os.path.splitext(source)[-1].lower()
         if ext == ".pdf":
-            return extract_text_from_pdf(source)
+            content = extract_text_from_pdf(source)
         elif ext == ".docx":
-            return extract_text_from_docx(source)
+            content = extract_text_from_docx(source)
         elif ext == ".txt":
-            return extract_text_from_txt(source)
+            content = extract_text_from_txt(source)
         else:
             logger.warning("Unsupported file type. Only .txt, .pdf, .docx are supported.")
             return ""
+    else:
+        logger.info("Treating input as raw text.")
+        content = source
 
-    logger.info("Treating input as raw text.")
-    return source
+    # Trim the content to the maximum number of words
+    return trim_text(content, max_words)

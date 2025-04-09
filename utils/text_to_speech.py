@@ -18,6 +18,9 @@ torch.serialization.add_safe_globals([
 @logger.catch
 def generate_audio_file(content: str, title: str) -> str:
     try:
+        if not content.strip():
+            raise ValueError("Content for TTS generation is empty.")
+
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
         import logging as tts_logging
         tts_logging.getLogger("TTS").setLevel(tts_logging.ERROR)
@@ -48,6 +51,9 @@ def generate_audio_file(content: str, title: str) -> str:
 
         return output_path
 
+    except ValueError as ve:
+        logger.error(f"TTS generation failed: {ve}")
+        return ""
     except Exception as e:
         logger.critical(f"Error during TTS generation: {e}")
         return ""
