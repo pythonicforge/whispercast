@@ -21,7 +21,6 @@ class Whisper(cmd.Cmd):
         content = generate_audiobook(content)
         generate_audio_file(content, "User_Audiobook")
 
-
     def do_sensei(self, arg: str) -> None:
         logger.info(f"Entering sensei mode")
 
