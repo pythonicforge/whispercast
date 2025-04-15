@@ -6,7 +6,6 @@ import sys
 
 if __name__ == "__main__":
     try:
-        # Check if the .env file exists
         check_env_file_exists()
         Whisper().cmdloop()
     except KeyboardInterrupt:
