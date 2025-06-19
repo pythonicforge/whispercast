@@ -39,72 +39,75 @@ def generate_podcast_script(topic: str, content: str, duration: int = 5) -> str:
     """
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-    base_prompt = f"""
-        You are a podcast host giving a solo monologue episode about the topic: "{topic}".
+    if client:
+        base_prompt = f"""
+            You are a podcast host giving a solo monologue episode about the topic: "{topic}".
 
-        Write a clean, casual podcast script that lasts around 5-6 minutes (~600-700 words).
-        Keep it natural and engaging — like a friendly radio host speaking alone.
+            Write a clean, casual podcast script that lasts around 5-6 minutes (~600-700 words).
+            Keep it natural and engaging — like a friendly radio host speaking alone.
 
-        Avoid any scene directions like [pause], or labels like "Host:".
-        Just pure, natural dialogue.
+            Avoid any scene directions like [pause], or labels like "Host:".
+            Just pure, natural dialogue.
 
-        Use the info below to guide your content:
-        \"\"\"{content}\"\"\"
-    """
-
-    try:
-        logger.info("Generating base script...")
-        base_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": base_prompt.strip()}],
-            model="llama3-70b-8192",
-            temperature=0.8,
-            max_tokens=4096,
-        )
-        base_script = base_completion.choices[0].message.content
-
-        expand_prompt = f"""
-            You are an expert podcast scriptwriter. Here's a podcast monologue:
-
-            \"\"\"{base_script}\"\"\"
-
-            Expand this script to be around 2000–4000 words. 
-            Keep the tone casual, fun, and informative — like a solo podcast host.
-            Don’t change the original style — just build on it and add more insights, examples, and natural flow.
+            Use the info below to guide your content:
+            \"\"\"{content}\"\"\"
         """
 
-        logger.info("Expanding script...")
-        expanded_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": expand_prompt.strip()}],
-            model="llama3-70b-8192",
-            temperature=0.75,
-            max_tokens=8192
-        )
-        pre_final_script = expanded_completion.choices[0].message.content
+        try:
+            logger.info("Generating base script...")
+            base_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": base_prompt.strip()}],
+                model="llama3-70b-8192",
+                temperature=0.8,
+                max_tokens=4096,
+            )
+            base_script = base_completion.choices[0].message.content
 
-        final_prompt = f"""
-            You are an expert podcast scriptwriter. Here's a podcast monologue:
+            expand_prompt = f"""
+                You are an expert podcast scriptwriter. Here's a podcast monologue:
 
-            \"\"\"{pre_final_script}\"\"\"
+                \"\"\"{base_script}\"\"\"
 
-            Expand this script to be around 2000–4000 words. 
-            Keep the tone casual, fun, and informative — like a solo podcast host.
-            Don’t change the original style — just build on it and add more insights, examples, and natural flow.
-        """
+                Expand this script to be around 2000–4000 words. 
+                Keep the tone casual, fun, and informative — like a solo podcast host.
+                Don’t change the original style — just build on it and add more insights, examples, and natural flow.
+            """
 
-        logger.info("Finalising script...")
-        expanded_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": final_prompt.strip()}],
-            model="llama3-70b-8192",
-            temperature=0.75,
-            max_tokens=8192
-        )
-        final_script = expanded_completion.choices[0].message.content
+            logger.info("Expanding script...")
+            expanded_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": expand_prompt.strip()}],
+                model="llama3-70b-8192",
+                temperature=0.75,
+                max_tokens=8192
+            )
+            pre_final_script = expanded_completion.choices[0].message.content
 
-        return clean_placeholders(extract_llama_core_text(final_script))
+            final_prompt = f"""
+                You are an expert podcast scriptwriter. Here's a podcast monologue:
 
-    except Exception as e:
-        logger.critical(f"Podcast generation failed: {e}")
-        return ""
+                \"\"\"{pre_final_script}\"\"\"
+
+                Expand this script to be around 2000–4000 words. 
+                Keep the tone casual, fun, and informative — like a solo podcast host.
+                Don’t change the original style — just build on it and add more insights, examples, and natural flow.
+            """
+
+            logger.info("Finalising script...")
+            expanded_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": final_prompt.strip()}],
+                model="llama3-70b-8192",
+                temperature=0.75,
+                max_tokens=8192
+            )
+            final_script = expanded_completion.choices[0].message.content
+
+            return clean_placeholders(extract_llama_core_text(final_script))
+
+        except Exception as e:
+            logger.critical(f"Podcast generation failed: {e}")
+            return ""
+    else:
+        logger.critical("No API key found!")
 
 def split_large_content(content: str, max_tokens: int = 6000) -> list:
     """

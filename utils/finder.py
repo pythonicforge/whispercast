@@ -1,5 +1,7 @@
 import os
-def get_file_path_from_output(filename: str, output_dir: str = "output") -> str | None:
+from typing import Optional
+
+def get_file_path_from_output(filename: str, output_dir: str = "output") -> Optional[str]:
     """
     Searches for the given filename inside the output directory.
     Returns the full path if found, else None.
