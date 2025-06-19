@@ -18,7 +18,7 @@ generate = st.button("🚀 Generate Podcast")
 log_area = st.empty()
 
 if generate and topic:
-    log_buffer = []  # To display as pseudo logs
+    log_buffer = []
 
     def log(msg, level="info"):
         log_buffer.append(f"> {msg}")
@@ -26,34 +26,34 @@ if generate and topic:
 
     try:
         # Step 1: Fetch data
-        log("Fetching topic data...")
+        log("Fetching topic data")
         content = fetch_topic_data(topic)
-        log("Topic data fetched ✅")
+        log("Topic data fetched")
 
         # Step 2: Generate script
-        log("Generating podcast script with LLaMA 3...")
+        log("Generating podcast script...")
         script = generate_podcast_script(topic, content)
         if not script:
             log("Script generation failed ❌", "error")
             st.error("Script generation failed.")
             st.stop()
-        log("Podcast script generated ✅")
+        log("Podcast script generated")
 
         # Step 3: Generate audio
         log("Generating audio file...")
         audio_path = generate_audio_file(script, topic.capitalize())
         if not audio_path:
-            log("Audio generation failed ❌", "error")
+            log("Audio generation failed", "error")
             st.error("Audio generation failed.")
             st.stop()
-        log("Podcast audio ready ✅")
+        log("Podcast audio ready")
 
         # Step 4: Output results
         st.success("🎧 Your podcast is ready!")
         st.audio(audio_path)
 
         with open(audio_path, "rb") as f:
-            st.download_button("📥 Download MP3", f, file_name=os.path.basename(audio_path))
+            st.download_button("Download MP3", f, file_name=os.path.basename(audio_path))
 
         with st.expander("📜 View Transcript"):
             st.markdown(script)
